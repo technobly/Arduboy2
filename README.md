@@ -1,5 +1,13 @@
 # Arduboy2 Library
 
+Ported to Particle by Brett Walach
+
+Tested with Photon on PartiBadge v2 using an I2C OLED display.
+
+_original README.md follows_
+
+---
+
 The Arduboy2 library is maintained in a git repository hosted on [GitHub](https://github.com/) at:
 
 https://github.com/MLXXXp/Arduboy2

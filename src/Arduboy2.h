@@ -8,13 +8,19 @@
 #define ARDUBOY2_H
 
 #include <Arduino.h>
+#ifndef PARTICLE
 #include <EEPROM.h>
+#else
+#include "Particle.h"
+#endif
 #include "Arduboy2Core.h"
 #include "Arduboy2Beep.h"
 #include "Sprites.h"
 #include "SpritesB.h"
+#ifndef PARTICLE
 #include <Print.h>
 #include <limits.h>
+#endif
 
 /** \brief
  * Library version

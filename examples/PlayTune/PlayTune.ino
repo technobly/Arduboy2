@@ -16,6 +16,8 @@ The score that is played contains two parts.
 With the DevKit only one part is played.
 ***************************************************************/
 
+#error "ArduboyPlaytune <https://github.com/Arduboy/ArduboyPlayTune> has not been ported to Particle yet!"
+
 #include <Arduboy2.h>
 #include <ArduboyPlaytune.h>
 
@@ -138,14 +140,6 @@ void setup()
 
   // audio setup
   tunes.initChannel(PIN_SPEAKER_1);
-#ifndef AB_DEVKIT
-  // if not a DevKit
-  tunes.initChannel(PIN_SPEAKER_2);
-#else
-  // if it's a DevKit
-  tunes.initChannel(PIN_SPEAKER_1); // use the same pin for both channels
-  tunes.toneMutesScore(true);       // mute the score when a tone is sounding
-#endif
 
   arduboy.invert(!arduboy.audio.enabled()); // invert display if sound muted
 }

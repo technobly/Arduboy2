@@ -4,14 +4,20 @@
  * The font definitions used to display text characters.
  */
 
+#ifndef PARTICLE
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#endif
 
 #ifndef FONT5X7_H
 #define FONT5X7_H
 
 // standard ascii 5x7 font
+#ifdef PARTICLE
+static const unsigned char font[] =
+#else
 static const unsigned char font[] PROGMEM =
+#endif
 {
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x3E, 0x5B, 0x4F, 0x5B, 0x3E,

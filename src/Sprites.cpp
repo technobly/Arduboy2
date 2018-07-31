@@ -241,6 +241,8 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
 
 
     case SPRITE_PLUS_MASK:
+// FIXME
+#ifndef PARTICLE
       // *2 because we use double the bits (mask + bitmap)
       bofs = (uint8_t *)(bitmap + ((start_h * w) + xOffset) * 2);
 
@@ -355,6 +357,7 @@ void Sprites::drawBitmap(int16_t x, int16_t y,
         // lower registers (l) or simple (r16-r23) upper registers (a).
         : // pushes/clobbers/pops r28 and r29 (y)
       );
+#endif
       break;
   }
 }

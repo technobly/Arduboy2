@@ -8,11 +8,12 @@
 #define ARDUBOY2_CORE_H
 
 #include <Arduino.h>
+#ifndef PARTICLE
 #include <avr/power.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <limits.h>
-
+#endif
 
 // main hardware compile flags
 
@@ -36,8 +37,35 @@
 #define RGB_ON LOW   /**< For digitially setting an RGB LED on using digitalWriteRGB() */
 #define RGB_OFF HIGH /**< For digitially setting an RGB LED off using digitalWriteRGB() */
 
+#ifdef PARTICLE
+// ----- Parti-badge v2 pins -----
+
+// USED AS AN ENUM ON PARTICLE
+#define RED_LED   (10) /**< The pin number for the red color in the RGB LED. */
+#define GREEN_LED (11) /**< The pin number for the greem color in the RGB LED. */
+#define BLUE_LED  (9)  /**< The pin number for the blue color in the RGB LED. */
+
+// bit values for button states
+// these are determined by the buttonsState() function
+#define LEFT_BUTTON  _BV(5) /**< The Left button value for functions requiring a bitmask */
+#define RIGHT_BUTTON _BV(6) /**< The Right button value for functions requiring a bitmask */
+#define UP_BUTTON    _BV(7) /**< The Up button value for functions requiring a bitmask */
+#define DOWN_BUTTON  _BV(4) /**< The Down button value for functions requiring a bitmask */
+#define A_BUTTON     _BV(3) /**< The A button value for functions requiring a bitmask */
+#define B_BUTTON     _BV(2) /**< The B button value for functions requiring a bitmask */
+
+#define PIN_UP_BUTTON    (D6)
+#define PIN_DOWN_BUTTON  (D5)
+#define PIN_LEFT_BUTTON  (D4)
+#define PIN_RIGHT_BUTTON (D3)
+
+#define PIN_A_BUTTON     (A4) // YELLOW
+#define PIN_B_BUTTON     (A6) // GREEN
+
+#define PIN_SPEAKER_1    (TX) /**< The pin number of the first lead of the speaker */
+
 // ----- Arduboy pins -----
-#ifdef ARDUBOY_10
+#elif defined(ARDUBOY_10)
 
 #define PIN_CS 12       // Display CS Arduino pin number
 #define CS_PORT PORTD   // Display CS port
@@ -210,6 +238,7 @@
 
 // ----- Pins common on Arduboy and DevKit -----
 
+#ifndef PARTICLE
 // Unconnected analog input used for noise by initRandomSeed()
 #define RAND_SEED_IN A4
 #define RAND_SEED_IN_PORT PORTF
@@ -230,8 +259,12 @@
 #define SPI_SS_PORT PORTB
 #define SPI_SS_BIT PORTB0
 // --------------------
+#endif
 
 // OLED hardware (SSD1306)
+
+#define OLED_COMMAND_MODE 0x00 // OLED command mode
+#define OLED_DATA_MODE 0x40 // OLED data mode
 
 #define OLED_PIXELS_INVERTED 0xA7 // All pixels inverted
 #define OLED_PIXELS_NORMAL 0xA6 // All pixels normal

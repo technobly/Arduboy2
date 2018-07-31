@@ -58,16 +58,21 @@ void Arduboy2Base::flashlight()
     return;
   }
 
+#ifndef PARTICLE
   sendLCDCommand(OLED_ALL_PIXELS_ON); // smaller than allPixelsOn()
+#endif
   digitalWriteRGB(RGB_ON, RGB_ON, RGB_ON);
 
+#ifndef PARTICLE
 #ifndef ARDUBOY_CORE // for Arduboy core timer 0 should remain enabled
   // prevent the bootloader magic number from being overwritten by timer 0
   // when a timer variable overlaps the magic number location, for when
   // flashlight mode is used for upload problem recovery
   power_timer0_disable();
 #endif
+#endif
 
+  Serial.println("flashlight on");
   while (true) {
     idle();
   }
@@ -257,6 +262,7 @@ bool Arduboy2Base::nextFrame()
   return true;
 }
 
+#ifndef PARTICLE
 bool Arduboy2Base::nextFrameDEV()
 {
   bool ret = nextFrame();
@@ -269,12 +275,14 @@ bool Arduboy2Base::nextFrameDEV()
   }
   return ret;
 }
+#endif
 
 int Arduboy2Base::cpuLoad()
 {
   return lastFrameDurationMs*100 / eachFrameMillis;
 }
 
+#ifndef PARTICLE
 unsigned long Arduboy2Base::generateRandomSeed()
 {
   unsigned long seed;
@@ -288,13 +296,16 @@ unsigned long Arduboy2Base::generateRandomSeed()
   seed = ((unsigned long)ADC << 16) + micros();
 
   power_adc_disable(); // ADC off
-
   return seed;
 }
+#endif
 
 void Arduboy2Base::initRandomSeed()
 {
+// random seed set by Particle Cloud
+#ifndef PARTICLE
   randomSeed(generateRandomSeed());
+#endif
 }
 
 /* Graphics */
@@ -327,11 +338,15 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
   // uint8_t row = (uint8_t)y / 8;
   // row_offset = (row*WIDTH) + (uint8_t)x;
   // bit = _BV((uint8_t)y % 8);
+#ifdef PARTICLE
+  uint8_t row = (uint8_t)y / 8;
+  row_offset = (row*WIDTH) + (uint8_t)x;
+  bit = _BV((uint8_t)y % 8);
 
   // the above math can also be rewritten more simply as;
   //   row_offset = (y * WIDTH/8) & ~0b01111111 + (uint8_t)x;
   // which is what the below assembler does
-
+#else
   // local variable for the bitshift_left array pointer,
   // which can be declared a read-write operand
   const uint8_t* bsl = bitshift_left;
@@ -358,6 +373,7 @@ void Arduboy2Base::drawPixel(int16_t x, int16_t y, uint8_t color)
       [x] "r" ((uint8_t)x)
     :
   );
+#endif
 
   if (color) {
     sBuffer[row_offset] |=   bit;
@@ -631,17 +647,16 @@ void Arduboy2Base::fillRect
 
 void Arduboy2Base::fillScreen(uint8_t color)
 {
-  // C version:
-  //
-  // if (color != BLACK)
-  // {
-  //   color = 0xFF; // all pixels on
-  // }
-  // for (int16_t i = 0; i < WIDTH * HEIGTH / 8; i++)
-  // {
-  //    sBuffer[i] = color;
-  // }
-
+#ifdef PARTICLE
+  if (color != BLACK)
+  {
+    color = 0xFF; // all pixels on
+  }
+  for (int16_t i = 0; i < (HEIGHT*WIDTH/8); i++)
+  {
+    sBuffer[i] = color;
+  }
+#else
   // This asm version is hard coded for 1024 bytes. It doesn't use the defined
   // WIDTH and HEIGHT values. It will have to be modified for a different
   // screen buffer size.
@@ -675,6 +690,7 @@ void Arduboy2Base::fillScreen(uint8_t color)
     :
     :
   );
+#endif
 }
 
 void Arduboy2Base::drawRoundRect
@@ -1064,14 +1080,24 @@ bool Arduboy2Base::collide(Rect rect1, Rect rect2)
 
 uint16_t Arduboy2Base::readUnitID()
 {
+#ifdef PARTICLE
+  uint16_t id = 0;
+  EEPROM.get(EEPROM_UNIT_ID, id);
+  return id;
+#else
   return EEPROM.read(EEPROM_UNIT_ID) |
          (((uint16_t)(EEPROM.read(EEPROM_UNIT_ID + 1))) << 8);
+#endif
 }
 
 void Arduboy2Base::writeUnitID(uint16_t id)
 {
+#ifdef PARTICLE
+  EEPROM.put(EEPROM_UNIT_ID, id);
+#else
   EEPROM.update(EEPROM_UNIT_ID, (uint8_t)(id & 0xff));
   EEPROM.update(EEPROM_UNIT_ID + 1, (uint8_t)(id >> 8));
+#endif
 }
 
 uint8_t Arduboy2Base::readUnitName(char* name)
@@ -1105,7 +1131,11 @@ void Arduboy2Base::writeUnitName(char* name)
       done = true;
     }
     // write character or 0 pad if finished
+#ifdef PARTICLE
+    EEPROM.write(dest, done ? 0x00 : name[src]);
+#else
     EEPROM.update(dest, done ? 0x00 : name[src]);
+#endif
     dest++;
   }
 }
@@ -1120,7 +1150,11 @@ void Arduboy2Base::writeShowBootLogoFlag(bool val)
   uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
 
   bitWrite(flags, SYS_FLAG_SHOW_LOGO, val);
+#ifdef PARTICLE
+  EEPROM.write(EEPROM_SYS_FLAGS, flags);
+#else
   EEPROM.update(EEPROM_SYS_FLAGS, flags);
+#endif
 }
 
 bool Arduboy2Base::readShowUnitNameFlag()
@@ -1133,7 +1167,11 @@ void Arduboy2Base::writeShowUnitNameFlag(bool val)
   uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
 
   bitWrite(flags, SYS_FLAG_UNAME, val);
+#ifdef PARTICLE
+  EEPROM.write(EEPROM_SYS_FLAGS, flags);
+#else
   EEPROM.update(EEPROM_SYS_FLAGS, flags);
+#endif
 }
 
 bool Arduboy2Base::readShowBootLogoLEDsFlag()
@@ -1146,7 +1184,11 @@ void Arduboy2Base::writeShowBootLogoLEDsFlag(bool val)
   uint8_t flags = EEPROM.read(EEPROM_SYS_FLAGS);
 
   bitWrite(flags, SYS_FLAG_SHOW_LOGO_LEDS, val);
+#ifdef PARTICLE
+  EEPROM.write(EEPROM_SYS_FLAGS, flags);
+#else
   EEPROM.update(EEPROM_SYS_FLAGS, flags);
+#endif
 }
 
 void Arduboy2Base::swap(int16_t& a, int16_t& b)

@@ -8,7 +8,11 @@
 #define ARDUBOY2_AUDIO_H
 
 #include <Arduino.h>
+#ifndef PARTICLE
 #include <EEPROM.h>
+#else
+#include "Particle.h"
+#endif
 
 /** \brief
  * Provide speaker and sound control.

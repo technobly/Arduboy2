@@ -100,11 +100,11 @@ void loop() {
   // start up feature. (Hold B while powering up then, while still holding B,
   // press UP to enable sound or DOWN for mute.)
   if (!arduboy.audio.enabled()) {
-    arduboy.setCursor(22, 40);
+    arduboy.setCursor(22, 50);
     arduboy.print(F("Sound is MUTED"));
   }
 
-  arduboy.setCursor(0, 48);
+  arduboy.setCursor(0, 0);
   // The "duration" variable can be tested for non-zero to determine if a
   // timed tone is currently playing.
   if (beep.duration != 0) {
@@ -114,7 +114,7 @@ void loop() {
     arduboy.print(F("Continuous tone or\nno tone playing"));
   }
 
-  arduboy.drawRect(objectX, 40, 6, 6);
+  arduboy.drawRect(objectX, 57, 6, 6);
   if (++objectX == WIDTH - 6) {
     objectX = 0;
   }

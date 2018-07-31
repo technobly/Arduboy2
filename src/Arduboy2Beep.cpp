@@ -5,9 +5,48 @@
  */
 
 #include <Arduino.h>
+#ifdef PARTICLE
+#include "Particle.h"
+#include "Arduboy2Core.h"
+#endif
 #include "Arduboy2Beep.h"
 
-#ifndef AB_DEVKIT
+#ifdef PARTICLE
+
+// Speaker pin 1
+
+uint8_t BeepPin1::duration = 0;
+
+void BeepPin1::begin()
+{
+  pinMode(PIN_SPEAKER_1, OUTPUT);
+}
+
+void BeepPin1::tone(uint16_t count)
+{
+  tone(count, 0);
+}
+
+void BeepPin1::tone(uint16_t count, uint8_t dur)
+{
+  duration = dur;
+  analogWrite(PIN_SPEAKER_1, 127, count); // 50% DC
+}
+
+void BeepPin1::timer()
+{
+  if (duration && (--duration == 0)) {
+    analogWrite(PIN_SPEAKER_1, 0); // OFF
+  }
+}
+
+void BeepPin1::noTone()
+{
+  duration = 0;
+  analogWrite(PIN_SPEAKER_1, 0); // OFF
+}
+
+#elif defined(ARDUBOY_10)
 
 // Speaker pin 1, Timer 3A, Port C bit 6, Arduino pin 5
 

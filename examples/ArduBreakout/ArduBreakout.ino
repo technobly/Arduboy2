@@ -19,7 +19,15 @@
 Arduboy2 arduboy;
 BeepPin1 beep;
 
-const unsigned int FRAME_RATE = 40; // Frame rate in frames per second
+// CHOOSE A SPEED!
+//------------------------------------
+// #define SPEED (30) // SLOW
+#define SPEED (45) // NORMAL
+// #define SPEED (60) // FAST
+// #define SPEED (100) // INSANE!
+//------------------------------------
+
+const unsigned int FRAME_RATE = SPEED; // Frame rate in frames per second
 const unsigned int COLUMNS = 13; //Columns of bricks
 const unsigned int ROWS = 4;     //Rows of bricks
 int dx = -1;        //Initial movement of ball

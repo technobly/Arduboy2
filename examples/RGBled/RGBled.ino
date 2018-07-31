@@ -28,15 +28,15 @@ related or neighboring rights to this BeepDemo program.
 #define ANALOG_MAX 255
 
 // Color array index
-enum class Color {
-  RED,
-  GREEN,
-  BLUE,
-  COUNT
+enum LEDcolor {
+  COLOR_RED,
+  COLOR_GREEN,
+  COLOR_BLUE,
+  COLOR_COUNT
 };
 
 // Map LED color index to LED name
-const byte LEDpin[(byte)(Color::COUNT)] = {
+const byte LEDpin[(byte)(COLOR_COUNT)] = {
   RED_LED,
   GREEN_LED,
   BLUE_LED
@@ -49,14 +49,19 @@ byte analogValue[3] = { 0, 0, 0};
 // Digital LED states
 byte digitalState[3] = { RGB_OFF, RGB_OFF, RGB_OFF };
 
-byte analogSelected = (byte)(Color::RED);
-byte digitalSelected = (byte)(Color::RED);
+byte analogSelected = (byte)(COLOR_RED);
+byte digitalSelected = (byte)(COLOR_RED);
 
 boolean controlMode = ANALOG;
 
 // Button repeat handling
 unsigned int delayCount = 0;
 boolean repeating = false;
+
+// Prototypes
+void drawAnalog(int y, LEDcolor color, const char* name);
+void drawBar(int y, LEDcolor color, byte value);
+void drawDigital(int y, LEDcolor color, const char* name);
 
 // ============================= SETUP ===================================
 void setup() {
@@ -88,7 +93,7 @@ void loop() {
 
   // Reset to Analog mode and all LEDs off
   if (arduboy.justPressed(B_BUTTON)) {
-    reset();
+    resetLEDs();
   }
 
   // Handle D-pad buttons for current mode
@@ -153,19 +158,19 @@ void modeDigital() {
 }
 
 // Reset to analog mode and turn all LEDs off
-void reset() {
-  digitalState[(byte)(Color::RED)] = RGB_OFF;
-  digitalState[(byte)(Color::GREEN)] = RGB_OFF;
-  digitalState[(byte)(Color::BLUE)] = RGB_OFF;
+void resetLEDs() {
+  digitalState[(byte)(COLOR_RED)] = RGB_OFF;
+  digitalState[(byte)(COLOR_GREEN)] = RGB_OFF;
+  digitalState[(byte)(COLOR_BLUE)] = RGB_OFF;
   digitalSet();
 
-  analogValue[(byte)(Color::RED)] = 0;
-  analogValue[(byte)(Color::GREEN)] = 0;
-  analogValue[(byte)(Color::BLUE)] = 0;
+  analogValue[(byte)(COLOR_RED)] = 0;
+  analogValue[(byte)(COLOR_GREEN)] = 0;
+  analogValue[(byte)(COLOR_BLUE)] = 0;
   analogSet();
 
-  digitalSelected = (byte)(Color::RED);
-  analogSelected = (byte)(Color::RED);
+  digitalSelected = (byte)(COLOR_RED);
+  analogSelected = (byte)(COLOR_RED);
 
   controlMode = ANALOG;
 }
@@ -218,7 +223,7 @@ void digitalSelectDec() {
 
 // Select the next color index with wrap
 void selectInc(byte &index) {
-  if (++index == (byte)(Color::COUNT)) {
+  if (++index == (byte)(COLOR_COUNT)) {
     index = 0;
   }
 }
@@ -226,7 +231,7 @@ void selectInc(byte &index) {
 // Select the previous color index with wrap
 void selectDec(byte &index) {
   if (index == 0) {
-    index = ((byte)(Color::COUNT) - 1);
+    index = ((byte)(COLOR_COUNT) - 1);
   }
   else {
     index--;
@@ -235,16 +240,16 @@ void selectDec(byte &index) {
 
 // Update all LEDs in analog mode
 void analogSet() {
-  arduboy.setRGBled(analogValue[(byte)(Color::RED)],
-                    analogValue[(byte)(Color::GREEN)],
-                    analogValue[(byte)(Color::BLUE)]);
+  arduboy.setRGBled(analogValue[(byte)(COLOR_RED)],
+                    analogValue[(byte)(COLOR_GREEN)],
+                    analogValue[(byte)(COLOR_BLUE)]);
 }
 
 // Update all LEDs in digital mode
 void digitalSet() {
-  arduboy.digitalWriteRGB(digitalState[(byte)(Color::RED)],
-                          digitalState[(byte)(Color::GREEN)],
-                          digitalState[(byte)(Color::BLUE)]);
+  arduboy.digitalWriteRGB(digitalState[(byte)(COLOR_RED)],
+                          digitalState[(byte)(COLOR_GREEN)],
+                          digitalState[(byte)(COLOR_BLUE)]);
 }
 
 // Start the button auto-repeat delay
@@ -262,29 +267,29 @@ void stopButtonRepeat() {
 // Render and display the screen
 void renderScreen() {
   arduboy.setCursor(12, 0);
-  arduboy.print(F("RGB LED"));
+  arduboy.print("RGB LED");
   arduboy.setCursor(15, 56);
-  arduboy.print(F("A:Mode   B:Reset"));
+  arduboy.print("A:Mode   B:Reset");
   arduboy.setCursor(74, 0);
 
   if (controlMode == ANALOG) {
-    arduboy.print(F(" Analog"));
-    drawAnalog(9, Color::RED, "Red:");
-    drawAnalog(25, Color::GREEN, "Green:");
-    drawAnalog(41, Color::BLUE, "Blue:");
+    arduboy.print(" Analog");
+    drawAnalog(9, COLOR_RED, "Red:");
+    drawAnalog(25, COLOR_GREEN, "Green:");
+    drawAnalog(41, COLOR_BLUE, "Blue:");
   }
   else { // Digital
-    arduboy.print(F("Digital"));
-    drawDigital(9, Color::RED, "Red:");
-    drawDigital(25, Color::GREEN, "Green:");
-    drawDigital(41, Color::BLUE, "Blue:");
+    arduboy.print("Digital");
+    drawDigital(9, COLOR_RED, "Red:");
+    drawDigital(25, COLOR_GREEN, "Green:");
+    drawDigital(41, COLOR_BLUE, "Blue:");
   }
 
   arduboy.display(CLEAR_BUFFER);
 }
 
 // Draw the information for one analog color
-void drawAnalog(int y, Color color, const char* name) {
+void drawAnalog(int y, LEDcolor color, const char* name) {
   byte value = analogValue[(byte)color];
 
   arduboy.setCursor(0, y);
@@ -292,13 +297,13 @@ void drawAnalog(int y, Color color, const char* name) {
   arduboy.setCursor(42, y);
   printValue(value);
   if (analogSelected == (byte)color) {
-    arduboy.print(F(" <--"));
+    arduboy.print(" <--");
   }
-  drawBar(y + 8, color, value);
+  drawBar(y + 8, (LEDcolor)color, value);
 }
 
 // Draw the value bar for an analog color
-void drawBar(int y, Color color, byte value) {
+void drawBar(int y, LEDcolor color, byte value) {
   byte barLength = value / 2;
 
   if (barLength == 0) {
@@ -314,23 +319,23 @@ void drawBar(int y, Color color, byte value) {
 }
 
 // Draw the informaton for one digital color
-void drawDigital(int y, Color color, const char* name) {
+void drawDigital(int y, LEDcolor color, const char* name) {
   byte state = digitalState[(byte)color];
 
   arduboy.setCursor(34, y + 3);
   arduboy.print(name);
   arduboy.setCursor(76, y + 3);
   if (state == RGB_ON) {
-    arduboy.print(F("ON "));
+    arduboy.print("ON ");
     arduboy.fillCircle(22, y + 6, 4);
   }
   else {
-    arduboy.print(F("OFF"));
+    arduboy.print("OFF");
     arduboy.drawCircle(22, y + 6, 4);
   }
 
-  if (digitalSelected == (byte)color) {
-    arduboy.print(F(" <--"));
+  if (digitalSelected == (int)color) {
+    arduboy.print(" <--");
     arduboy.drawRect(16, y, 13, 13);
   }
 }
@@ -345,7 +350,7 @@ void printValue(byte val) {
   }
   arduboy.print(val);
 
-  arduboy.print(F("  0x"));
+  arduboy.print("  0x");
   if (val < 0x10) {
     arduboy.print('0');
   }
